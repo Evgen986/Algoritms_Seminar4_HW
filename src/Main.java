@@ -1,6 +1,6 @@
 public class Main {
     public static void main(String[] args) {
-        RBTree tree = new RBTree();
+        RBTree <Integer> tree = new RBTree<>();
         System.out.println(tree.add(7));
         System.out.println(tree.add(4));
         System.out.println(tree.add(3));

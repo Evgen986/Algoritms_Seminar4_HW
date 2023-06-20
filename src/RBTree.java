@@ -1,60 +1,60 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class RBTree {
-
+public class RBTree<V extends Comparable<V>> {
     private Node root;
 
     /**
      * Добавление значения в дерево
-     * @param value
-     * @return
+     *
+     * @param value значение для добавления
      */
-    public boolean add(int value){
-        if (root != null){
+    public boolean add(V value) {
+        Node newNode = new Node();
+        newNode.value = value;
+        if (root == null) {
+            root = newNode;
+            root.color = Color.BLACK;
+            return true;
+        } else {
             boolean result = addNode(root, value);
             root = rebalance(root);
             root.color = Color.BLACK;
             return result;
-        }else{
-            root = new Node();
-            root.color = Color.BLACK;
-            root.value = value;
-            return true;
         }
     }
 
-
     /**
-     * Добавление ноды в дерево
+     * Добавление ноды
+     *
      * @param node
      * @param value
      * @return
      */
-    private boolean addNode(Node node, int value){
-        if (node.value == value){
+    private boolean addNode(Node node, V value) {
+        if (node.value.compareTo(value) == 0) {
             return false;
-        }else{
-            if (node.value > value) {
-                if (node.leftChild != null) {
-                    boolean result = addNode(node.leftChild, value);
-                    node.leftChild = rebalance(node.leftChild);
+        } else {
+            if (node.value.compareTo(value) > 0) {
+                if (node.left != null) {
+                    boolean result = addNode(node.left, value);
+                    node.left = rebalance(node.left);
                     return result;
                 } else {
-                    node.leftChild = new Node();
-                    node.leftChild.color = Color.RED;
-                    node.leftChild.value = value;
+                    node.left = new Node();
+                    node.left.color = Color.RED;
+                    node.left.value = value;
                     return true;
                 }
-            }else{
-                if (node.rightChild != null){
-                    boolean result = addNode(node.rightChild, value);
-                    node.rightChild = rebalance(node.rightChild);
+            } else {
+                if (node.right != null) {
+                    boolean result = addNode(node.right, value);
+                    node.right = rebalance(node.right);
                     return result;
-                }else{
-                    node.rightChild = new Node();
-                    node.rightChild.color = Color.RED;
-                    node.rightChild.value = value;
+                } else {
+                    node.right = new Node();
+                    node.right.color = Color.RED;
+                    node.right.value = value;
                     return true;
                 }
             }
@@ -62,7 +62,29 @@ public class RBTree {
     }
 
     /**
-     * Ребаланс дерева
+     * Проверка содержится ли значение в дереве
+     *
+     * @param value значение для поиска
+     * @return true - если элемент найден, false - если совпадений не нашлось
+     */
+    public boolean contains(V value) {
+        Node node = root;
+        while (node != null) {
+            if (node.value.equals(value)) {
+                return true;
+            }
+            if (node.value.compareTo(value) > 0) {
+                node = node.left;
+            } else {
+                node = node.right;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Ребалансировка дерева
+     *
      * @param node
      * @return
      */
@@ -71,18 +93,18 @@ public class RBTree {
         boolean needRebalance;
         do{
             needRebalance = false;
-            if(result.rightChild != null && result.rightChild.color == Color.RED &&
-                    (result.leftChild == null || result.leftChild.color == Color.BLACK)){
+            if(result.right != null && result.right.color == Color.RED &&
+                    (result.left == null || result.left.color == Color.BLACK)){
                 needRebalance = true;
                 result = rightSwap(result);
             }
-            if(result.leftChild != null && result.leftChild.color == Color.RED &&
-                    result.leftChild.leftChild != null && result.leftChild.leftChild.color == Color.RED){
+            if(result.left != null && result.left.color == Color.RED &&
+                    result.left.left != null && result.left.left.color == Color.RED){
                 needRebalance = true;
                 result = leftSwap(result);
             }
-            if (result.leftChild != null && result.leftChild.color == Color.RED &&
-                    result.rightChild != null && result.rightChild.color == Color.RED){
+            if (result.left != null && result.left.color == Color.RED &&
+                    result.right != null && result.right.color == Color.RED){
                 needRebalance = true;
                 colorSwap(result);
             }
@@ -91,32 +113,31 @@ public class RBTree {
         return result;
     }
 
-
     /**
      * Правый поворот
      * @param node
      * @return
      */
     private Node rightSwap(Node node){
-        Node rightChild = node.rightChild;
-        Node betweenChild = rightChild.leftChild;
-        rightChild.leftChild = node;
-        node.rightChild = betweenChild;
+        Node rightChild = node.right;
+        Node betweenChild = rightChild.left;
+        rightChild.left = node;
+        node.right = betweenChild;
         rightChild.color = node.color;
         node.color = Color.RED;
         return rightChild;
     }
 
     /**
-     * Левый поворот
+     * Девый поворот
      * @param node
      * @return
      */
     private Node leftSwap(Node node){
-        Node leftChild = node.leftChild;
-        Node betweenChild = leftChild.rightChild;
-        leftChild.rightChild = node;
-        node.leftChild = betweenChild;
+        Node leftChild = node.left;
+        Node betweenChild = leftChild.right;
+        leftChild.right = node;
+        node.left = betweenChild;
         leftChild.color = node.color;
         node.color = Color.RED;
         return leftChild;
@@ -127,11 +148,10 @@ public class RBTree {
      * @param node
      */
     private void colorSwap(Node node){
-        node.rightChild.color = Color.BLACK;
-        node.leftChild.color = Color.BLACK;
+        node.right.color = Color.BLACK;
+        node.left.color = Color.BLACK;
         node.color = Color.RED;
     }
-
 
     /**
      * Общее количество нод в дереве
@@ -148,8 +168,8 @@ public class RBTree {
                     if (node != null) {
                         counter++;
                     }
-                    if (node.leftChild != null) nextLine.add(node.leftChild);
-                    if (node.rightChild != null) nextLine.add(node.rightChild);
+                    if (node.left != null) nextLine.add(node.left);
+                    if (node.right != null) nextLine.add(node.right);
                 }
                 line = nextLine;
             }
@@ -159,13 +179,13 @@ public class RBTree {
     }
 
     private class Node {
-        private int value;
+        private V value;
+        private Node left;
+        private Node right;
         private Color color;
-        private Node leftChild;
-        private Node rightChild;
-
     }
-    private enum Color {
+
+    enum Color {
         RED, BLACK
     }
 }
